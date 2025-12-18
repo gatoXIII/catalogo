@@ -1,234 +1,221 @@
 // src/routes/api/productos/+server.js
 import { json } from '@sveltejs/kit';
-import { supabaseAdmin } from '$lib/supabaseServer';
-import { generateSlug } from '$lib/supabaseClient';
+import { supabase } from '$lib/supabaseClient';
 
-// ========================================
-// GET - Listar productos con filtros
-// ========================================
+function generateSlug(nombre) {
+  return nombre
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+}
+
+async function ensureUniqueSlug(baseSlug, excludeId = null) {
+  let slug = baseSlug;
+  let counter = 1;
+  
+  while (true) {
+    const query = supabase
+      .from('productos')
+      .select('id')
+      .eq('slug', slug);
+    
+    if (excludeId) {
+      query.neq('id', excludeId);
+    }
+    
+    const { data, error } = await query;
+    
+    if (error) {
+      console.error('Error checking slug:', error);
+      throw error;
+    }
+    
+    if (!data || data.length === 0) {
+      return slug;
+    }
+    
+    slug = `${baseSlug}-${counter}`;
+    counter++;
+  }
+}
+
 export async function GET({ url }) {
   try {
-    const page = parseInt(url.searchParams.get('page') || '1');
-    const limit = parseInt(url.searchParams.get('limit') || '20');
-    const categoriaId = url.searchParams.get('categoria');
-    const marcaId = url.searchParams.get('marca');
-    const busqueda = url.searchParams.get('q');
-    const destacados = url.searchParams.get('destacados');
+    const destacado = url.searchParams.get('destacado');
+    const categoria_id = url.searchParams.get('categoria_id');
     
-    // Construir query
-    let query = supabaseAdmin
-      .from('vista_productos_completos')
-      .select('*', { count: 'exact' })
-      .eq('activo', true)
+    let query = supabase
+      .from('productos')
+      .select(`
+        *,
+        categoria:categorias(id, nombre, slug)
+      `)
       .order('created_at', { ascending: false });
     
-    // Aplicar filtros
-    if (categoriaId) {
-      query = query.eq('categoria_id', categoriaId);
-    }
-    
-    if (marcaId) {
-      query = query.eq('marca_id', marcaId);
-    }
-    
-    if (busqueda) {
-      query = query.or(`nombre.ilike.%${busqueda}%,descripcion_larga.ilike.%${busqueda}%`);
-    }
-    
-    if (destacados === 'true') {
+    if (destacado === 'true') {
       query = query.eq('destacado', true);
     }
     
-    // Paginación
-    const from = (page - 1) * limit;
-    const to = from + limit - 1;
-    query = query.range(from, to);
+    if (categoria_id) {
+      query = query.eq('categoria_id', parseInt(categoria_id));
+    }
     
-    const { data, error, count } = await query;
+    const { data, error } = await query;
     
     if (error) throw error;
     
-    return json({
-      success: true,
-      data,
-      pagination: {
-        page,
-        limit,
-        total: count,
-        totalPages: Math.ceil(count / limit)
-      }
-    });
+    return json(data || []);
   } catch (error) {
-    console.error('Error GET productos:', error);
-    return json(
-      { success: false, error: error.message },
-      { status: 500 }
-    );
+    console.error('Error en GET /api/productos:', error);
+    return json({ error: error.message }, { status: 500 });
   }
 }
 
-// ========================================
-// POST - Crear nuevo producto
-// ========================================
 export async function POST({ request }) {
   try {
     const body = await request.json();
+    console.log('📥 Datos recibidos:', body);
     
-    // Validaciones básicas
-    if (!body.nombre || !body.precio) {
-      return json(
-        { success: false, error: 'Nombre y precio son requeridos' },
-        { status: 400 }
-      );
+    // Validaciones
+    if (!body.nombre?.trim()) {
+      return json({ error: 'El nombre es obligatorio' }, { status: 400 });
+    }
+    
+    if (!body.categoria_id) {
+      return json({ error: 'La categoría es obligatoria' }, { status: 400 });
+    }
+    
+    // Conversiones y preparación de datos
+    const precio = body.precio ? parseFloat(body.precio) : 0;
+    const stock = body.stock !== '' && body.stock !== null ? parseInt(body.stock) : null;
+    const descuento = body.descuento ? parseFloat(body.descuento) : null;
+    
+    if (isNaN(precio)) {
+      return json({ error: 'El precio debe ser un número válido' }, { status: 400 });
+    }
+    
+    if (stock !== null && isNaN(stock)) {
+      return json({ error: 'El stock debe ser un número válido' }, { status: 400 });
     }
     
     // Generar slug único
-    let slug = body.slug || generateSlug(body.nombre);
+    const baseSlug = body.slug?.trim() || generateSlug(body.nombre);
+    const slug = await ensureUniqueSlug(baseSlug);
     
-    // Verificar si el slug ya existe
-    const { data: existingSlug } = await supabaseAdmin
-      .from('productos')
-      .select('slug')
-      .eq('slug', slug)
-      .single();
-    
-    if (existingSlug) {
-      slug = `${slug}-${Date.now()}`;
-    }
-    
-    // Preparar datos del producto
     const productoData = {
-      nombre: body.nombre,
-      descripcion_corta: body.descripcion_corta || null,
-      descripcion_larga: body.descripcion_larga || null,
-      precio: parseFloat(body.precio),
-      precio_oferta: body.precio_oferta ? parseFloat(body.precio_oferta) : null,
-      stock: parseInt(body.stock) || 0,
-      stock_minimo: parseInt(body.stock_minimo) || 5,
-      categoria_id: body.categoria_id || null,
-      marca_id: body.marca_id || null,
-      imagen_url: body.imagen_url || null,
-      imagenes_adicionales: body.imagenes_adicionales || [],
+      nombre: body.nombre.trim(),
+      descripcion: body.descripcion?.trim() || null,
+      precio,
+      stock,
+      categoria_id: parseInt(body.categoria_id),
+      imagen_url: body.imagen_url?.trim() || null,
+      destacado: Boolean(body.destacado),
+      activo: body.activo !== false,
       slug,
-      sku: body.sku || null,
-      activo: body.activo !== undefined ? body.activo : true,
-      destacado: body.destacado || false
+      descuento,
+      sku: body.sku?.trim() || null
     };
     
-    // Insertar en BD
-    const { data, error } = await supabaseAdmin
+    console.log('💾 Insertando producto:', productoData);
+    
+    const { data, error } = await supabase
       .from('productos')
-      .insert(productoData)
-      .select()
+      .insert([productoData])
+      .select(`
+        *,
+        categoria:categorias(id, nombre, slug)
+      `)
       .single();
     
-    if (error) throw error;
+    if (error) {
+      console.error('❌ Error de Supabase:', error);
+      
+      if (error.code === '23505') {
+        return json({ error: 'Ya existe un producto con ese slug' }, { status: 409 });
+      }
+      
+      throw error;
+    }
     
-    return json({
-      success: true,
-      data,
-      message: 'Producto creado exitosamente'
-    }, { status: 201 });
+    console.log('✅ Producto creado:', data);
+    return json(data, { status: 201 });
     
   } catch (error) {
-    console.error('Error POST producto:', error);
-    return json(
-      { success: false, error: error.message },
-      { status: 500 }
-    );
+    console.error('❌ Error en POST /api/productos:', error);
+    return json({ 
+      error: 'Error al crear el producto',
+      details: error.message 
+    }, { status: 500 });
   }
 }
 
-// ========================================
-// PUT - Actualizar producto
-// ========================================
 export async function PUT({ request }) {
   try {
     const body = await request.json();
+    const { id, ...updateData } = body;
     
-    if (!body.id) {
-      return json(
-        { success: false, error: 'ID del producto requerido' },
-        { status: 400 }
-      );
+    if (!id) {
+      return json({ error: 'ID del producto requerido' }, { status: 400 });
     }
     
-    // Preparar datos para actualización (solo campos presentes)
-    const updateData = {};
+    // Conversiones
+    if (updateData.precio !== undefined) {
+      updateData.precio = parseFloat(updateData.precio);
+    }
     
-    const camposPermitidos = [
-      'nombre', 'descripcion_corta', 'descripcion_larga',
-      'precio', 'precio_oferta', 'stock', 'stock_minimo',
-      'categoria_id', 'marca_id', 'imagen_url', 'imagenes_adicionales',
-      'slug', 'sku', 'activo', 'destacado'
-    ];
+    if (updateData.stock !== undefined && updateData.stock !== '') {
+      updateData.stock = parseInt(updateData.stock);
+    }
     
-    camposPermitidos.forEach(campo => {
-      if (body[campo] !== undefined) {
-        updateData[campo] = body[campo];
-      }
-    });
+    if (updateData.descuento !== undefined && updateData.descuento !== '') {
+      updateData.descuento = parseFloat(updateData.descuento);
+    }
     
-    // Actualizar
-    const { data, error } = await supabaseAdmin
+    // Actualizar slug si cambió el nombre
+    if (updateData.nombre) {
+      const baseSlug = updateData.slug || generateSlug(updateData.nombre);
+      updateData.slug = await ensureUniqueSlug(baseSlug, id);
+    }
+    
+    const { data, error } = await supabase
       .from('productos')
       .update(updateData)
-      .eq('id', body.id)
-      .select()
+      .eq('id', id)
+      .select(`
+        *,
+        categoria:categorias(id, nombre, slug)
+      `)
       .single();
     
     if (error) throw error;
     
-    return json({
-      success: true,
-      data,
-      message: 'Producto actualizado exitosamente'
-    });
-    
+    return json(data);
   } catch (error) {
-    console.error('Error PUT producto:', error);
-    return json(
-      { success: false, error: error.message },
-      { status: 500 }
-    );
+    console.error('Error en PUT /api/productos:', error);
+    return json({ error: error.message }, { status: 500 });
   }
 }
 
-// ========================================
-// DELETE - Eliminar producto (soft delete)
-// ========================================
 export async function DELETE({ url }) {
   try {
     const id = url.searchParams.get('id');
     
     if (!id) {
-      return json(
-        { success: false, error: 'ID del producto requerido' },
-        { status: 400 }
-      );
+      return json({ error: 'ID del producto requerido' }, { status: 400 });
     }
     
-    // Soft delete: marcar como inactivo
-    const { data, error } = await supabaseAdmin
+    const { error } = await supabase
       .from('productos')
-      .update({ activo: false })
-      .eq('id', id)
-      .select()
-      .single();
+      .delete()
+      .eq('id', parseInt(id));
     
     if (error) throw error;
     
-    return json({
-      success: true,
-      data,
-      message: 'Producto eliminado exitosamente'
-    });
-    
+    return json({ success: true });
   } catch (error) {
-    console.error('Error DELETE producto:', error);
-    return json(
-      { success: false, error: error.message },
-      { status: 500 }
-    );
+    console.error('Error en DELETE /api/productos:', error);
+    return json({ error: error.message }, { status: 500 });
   }
 }
