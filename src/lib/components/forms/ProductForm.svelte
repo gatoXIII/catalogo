@@ -1,4 +1,5 @@
 <!-- src/lib/components/dashboard/ProductForm.svelte -->
+ <!--revisar productos-->
 <script>
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';

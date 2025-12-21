@@ -1,4 +1,5 @@
 <!-- src/routes/dashboard/+layout.svelte -->
+ <!--revisar productos-->
 <script>
   import DashboardSidebar from '$lib/components/dashboard/DashboardSidebar.svelte';
   //import { authStore } from '$lib/stores/authStore';
@@ -28,7 +29,7 @@
       </div>
     </header>
 
-    <!-- Content Area - SIN PADDING EXCESIVO -->
+    <!-- Content Area  -->
     <main class="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
       <slot />
     </main>

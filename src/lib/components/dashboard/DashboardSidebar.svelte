@@ -1,4 +1,5 @@
 <!-- src/lib/components/dashboard/DashboardSidebar.svelte -->
+<!--revisar productos-->
 <script>
   import { 
     LayoutDashboard, 

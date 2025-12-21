@@ -1,4 +1,5 @@
 <!-- src/routes/+layout.svelte -->
+ <!--revisar productos-->
 <script>
   import '../app.css';
   import Header from '$lib/components/ui/Header.svelte';

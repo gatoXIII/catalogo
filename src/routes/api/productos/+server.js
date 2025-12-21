@@ -1,4 +1,5 @@
 // src/routes/api/productos/+server.js
+//revisar
 import { json } from '@sveltejs/kit';
 import { supabase } from '$lib/supabaseClient';
 

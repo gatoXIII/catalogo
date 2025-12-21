@@ -1,4 +1,5 @@
 // src/routes/dashboard/productos/+page.server.js
+//revisar
 import { supabase } from '$lib/supabaseClient';
 
 export async function load() {
