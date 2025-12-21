@@ -1,4 +1,5 @@
 <!-- src/routes/dashboard/configuracion/+page.svelte -->
+ <!--revisar -->
 <script>
   import { onMount } from 'svelte';
   import { Settings, Save, Loader2, CheckCircle2 } from 'lucide-svelte';

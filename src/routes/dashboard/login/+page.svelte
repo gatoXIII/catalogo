@@ -1,3 +1,4 @@
+<!--revisar -->
 <script>
   import { goto } from '$app/navigation';
   import { auth } from '$lib/stores/authStore';

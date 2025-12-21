@@ -1,5 +1,5 @@
 <!-- src/routes/dashboard/categorias/+page.svelte -->
- <!--revisar productos-->
+ <!--revisar -->
 <script>
   import { onMount } from 'svelte';
   import { Tag, Plus, Edit, Trash2, CheckCircle2, X } from 'lucide-svelte';

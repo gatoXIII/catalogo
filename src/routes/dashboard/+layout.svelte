@@ -1,5 +1,5 @@
 <!-- src/routes/dashboard/+layout.svelte -->
- <!--revisar productos-->
+ <!--revisar -->
 <script>
   import DashboardSidebar from '$lib/components/dashboard/DashboardSidebar.svelte';
   //import { authStore } from '$lib/stores/authStore';

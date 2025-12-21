@@ -1,4 +1,5 @@
 <!-- src/lib/components/forms/CategoriaForm.svelte -->
+ <!--revisar -->
 <script>
   import { createEventDispatcher } from 'svelte';
   import { Save, X, Loader2 } from 'lucide-svelte';

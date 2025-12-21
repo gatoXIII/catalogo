@@ -1,4 +1,5 @@
 // src/routes/api/pedidos/+server.js
+//x
 import { json } from '@sveltejs/kit';
 import { supabaseAdmin } from '$lib/supabaseServer';
 

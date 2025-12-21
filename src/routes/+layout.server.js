@@ -1,4 +1,5 @@
 // src/routes/+layout.server.js
+//x
 import { supabase } from '$lib/supabaseClient';
 
 export async function load() {
