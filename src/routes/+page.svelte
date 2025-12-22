@@ -2,7 +2,7 @@
 <script>
   import ProductCard from '$lib/components/catalog/ProductCard.svelte';
   import { Search, Filter, AlertCircle } from 'lucide-svelte';
-  //x
+  
   // Recibir datos desde +page.server.js
   export let data;
   

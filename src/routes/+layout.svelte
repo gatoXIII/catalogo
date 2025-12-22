@@ -1,5 +1,5 @@
 <!-- src/routes/+layout.svelte -->
- <!--revisar -->
+ <!--revisar productos-->
 <script>
   import '../app.css';
   import Header from '$lib/components/ui/Header.svelte';
@@ -11,7 +11,7 @@
   //export let params = {};
   $: configuracion = data?.configuracion;
   
-  $: isDashboard = $page.url.pathname.startsWith('/dashboard');
+  $: isDashboard = $page.url.pathname.startsWith('/dashboard/(admin)');
   console.log(data.configuracion);
 </script> 
 

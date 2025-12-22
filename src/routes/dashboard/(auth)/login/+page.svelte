@@ -1,4 +1,4 @@
-<!--revisar -->
+<!--src/routes/dashboard/(auth)/login/+page.svelte -->
 <script>
   import { goto } from '$app/navigation';
   import { auth } from '$lib/stores/authStore';
@@ -17,7 +17,7 @@
     if (result.success) {
       // Redirigir al dashboard después de login exitoso
       setTimeout(() => {
-        goto('/dashboard');
+        goto('/dashboard/admin');
       }, 100);
     }
   }
