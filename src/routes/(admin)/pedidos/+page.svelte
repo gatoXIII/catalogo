@@ -1,4 +1,4 @@
-<!-- src/routes/dashboard/pedidos/+page.svelte -->
+<!-- src/routes/(admin)/pedidos/+page.svelte -->
 <script>
   import { onMount } from 'svelte';
   
@@ -30,7 +30,7 @@
   async function loadPedidos() {
     try {
       loading = true;
-      const res = await fetch('/api/pedidos');
+      const res = await fetch('api/pedidos');
       if (res.ok) {
         pedidos = await res.json();
       }
@@ -44,7 +44,7 @@
   
   async function cambiarEstado(pedidoId, nuevoEstado) {
     try {
-      const res = await fetch('/api/pedidos', {
+      const res = await fetch('api/pedidos', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: pedidoId, estado: nuevoEstado })

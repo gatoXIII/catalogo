@@ -22,11 +22,11 @@
   
   const menuItems = [
     { icon: LayoutDashboard, label: 'Resumen', href: '/dashboard' },
-    { icon: Package, label: 'Productos', href: '/dashboard/productos' },
-    { icon: Tag, label: 'Categorías', href: '/dashboard/categorias' },
-    { icon: ShoppingBag, label: 'Pedidos', href: '/dashboard/pedidos' },
-    { icon: MessageCircle, label: 'Mensajes', href: '/dashboard/mensajes' },
-    { icon: Settings, label: 'Configuración', href: '/dashboard/configuracion' }
+    { icon: Package, label: 'Productos', href: '/productos' },
+    { icon: Tag, label: 'Categorías', href: '/categorias' },
+    { icon: ShoppingBag, label: 'Pedidos', href: '/pedidos' },
+    { icon: MessageCircle, label: 'Mensajes', href: '/mensajes' },
+    { icon: Settings, label: 'Configuración', href: '/configuracion' }
   ];
   
   function handleLogout() {

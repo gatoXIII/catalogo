@@ -52,7 +52,7 @@
 
   async function loadCategorias() {
     try {
-      const res = await fetch('/api/categorias');
+      const res = await fetch('api/categorias');
       if (res.ok) {
         categorias = await res.json();
       }
@@ -124,7 +124,7 @@
 
       console.log('📤 Enviando datos:', dataToSend);
 
-      const url = producto ? '/api/productos' : '/api/productos';
+      const url = producto ? 'api/productos' : 'api/productos';
       const method = producto ? 'PUT' : 'POST';
 
       if (producto) {

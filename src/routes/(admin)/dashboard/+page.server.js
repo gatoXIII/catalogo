@@ -1,4 +1,4 @@
-// src/routes/dashboard/(admin)/+page.server.js
+// src/routes/(admin)/dashboard/+page.server.js
 import { obtenerEstadisticasDashboard } from '$lib/supabaseServer';
 import { supabase } from '$lib/supabaseClient';
 

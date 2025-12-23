@@ -7,15 +7,15 @@ export async function handle({ event, resolve }) {
 
   // Rutas protegidas del dashboard
   const PROTECTED_ROUTES = [
-    '/dashboard',
-    '/dashboard/productos',
-    '/dashboard/pedidos',
-    '/dashboard/mensajes',
-    '/dashboard/configuracion'
+    '/(admin)/dashboard',
+    '/(admin)/dashboard/productos',
+    '/(admin)/dashboard/pedidos',
+    '/(admin)/dashboard/mensajes',
+    '/(admin)/dashboard/configuracion'
   ];
 
   // Si es ruta de login del dashboard, permitir siempre
-  if (path === '/dashboard/login') {
+  if (path === '/(auth)/login') {
     return await resolve(event);
   }
 
@@ -26,12 +26,12 @@ export async function handle({ event, resolve }) {
 
   // Si es ruta protegida y no hay token, redirigir a login
   if (isProtectedRoute && !token) {
-    throw redirect(302, '/dashboard/login');
+    throw redirect(302, '/(auth)/login');
   }
 
   // Si ya tiene token y va al login, redirigir al dashboard
-  if (path === '/dashboard/login' && token) {
-    throw redirect(302, '/dashboard');
+  if (path === '/(auth)/login' && token) {
+    throw redirect(302, '/(admin)/dashboard');
   }
 
   return await resolve(event);

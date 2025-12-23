@@ -1,4 +1,4 @@
-<!-- src/routes/dashboard/categorias/+page.svelte -->
+<!-- src/routes/(admin)/categorias/+page.svelte -->
  <!--revisar -->
 <script>
   import { onMount } from 'svelte';

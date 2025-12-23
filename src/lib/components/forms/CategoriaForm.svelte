@@ -30,7 +30,7 @@
     error = '';
     
     try {
-      const url = '/api/categorias';
+      const url = 'api/categorias';
       const method = modoEdicion ? 'PUT' : 'POST';
       
       const response = await fetch(url, {

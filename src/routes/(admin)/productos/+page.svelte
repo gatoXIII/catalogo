@@ -1,4 +1,4 @@
-<!-- src/routes/dashboard/productos/+page.svelte -->
+<!-- src/routes/(admin)/productos/+page.svelte -->
 <!--revisar productos-->
 <script>
   import { onMount } from 'svelte';
@@ -32,8 +32,8 @@
       loading = true;
       
       const [resProductos, resCategorias] = await Promise.all([
-        fetch('/api/productos'),
-        fetch('/api/categorias')
+        fetch('api/productos'),
+        fetch('api/categorias')
       ]);
       
       if (resProductos.ok) productos = await resProductos.json();
@@ -49,7 +49,7 @@
   
   async function toggleActivo(producto) {
     try {
-      const res = await fetch('/api/productos', {
+      const res = await fetch('api/productos', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -74,7 +74,7 @@
     if (!productoToDelete) return;
     
     try {
-      const res = await fetch(`/api/productos?id=${productoToDelete.id}`, {
+      const res = await fetch(`api/productos?id=${productoToDelete.id}`, {
         method: 'DELETE'
       });
       

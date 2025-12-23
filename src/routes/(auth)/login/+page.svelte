@@ -1,26 +1,11 @@
-<!--src/routes/dashboard/(auth)/login/+page.svelte -->
+<!-- src/routes/(auth)/login/+page.svelte -->
 <script>
-  import { goto } from '$app/navigation';
-  import { auth } from '$lib/stores/authStore';
+  import { enhance } from '$app/forms';
   import { Store, Lock, User } from 'lucide-svelte';
   
-  let username = '';
-  let password = '';
+  export let form; // Recibe datos del server (errores)
   
-  // Función de login simplificada
-  async function handleLogin(e) {
-    e.preventDefault();
-    if ($auth.loading) return;
-    
-    const result = await auth.login(username, password);
-    
-    if (result.success) {
-      // Redirigir al dashboard después de login exitoso
-      setTimeout(() => {
-        goto('/dashboard/admin');
-      }, 100);
-    }
-  }
+  let loading = false;
 </script>
 
 <div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
@@ -36,10 +21,19 @@
         <p class="text-gray-600 mt-2">Ingresa tus credenciales para continuar</p>
       </div>
       
-      <!-- Formulario -->
-      <form on:submit|preventDefault={handleLogin}>
+      <!-- Formulario con form actions -->
+      <form 
+        method="POST"
+        use:enhance={() => {
+          loading = true;
+          return async ({ update }) => {
+            await update();
+            loading = false;
+          };
+        }}
+      >
         <!-- Error message -->
-        {#if $auth.error}
+        {#if form?.error}
           <div class="mb-6 p-3 bg-red-50 border border-red-100 rounded-lg">
             <div class="flex items-center">
               <div class="flex-shrink-0">
@@ -48,7 +42,7 @@
                 </svg>
               </div>
               <div class="ml-3">
-                <p class="text-sm text-red-700">{$auth.error}</p>
+                <p class="text-sm text-red-700">{form.error}</p>
               </div>
             </div>
           </div>
@@ -63,11 +57,12 @@
           <div class="relative">
             <input
               type="text"
-              bind:value={username}
+              name="username"
+              value={form?.username ?? ''}
               placeholder="admin"
               required
               class="input pl-10"
-              disabled={$auth.loading}
+              disabled={loading}
             />
             <User class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
           </div>
@@ -82,11 +77,11 @@
           <div class="relative">
             <input
               type="password"
-              bind:value={password}
+              name="password"
               placeholder="••••••••"
               required
               class="input pl-10"
-              disabled={$auth.loading}
+              disabled={loading}
             />
             <Lock class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
           </div>
@@ -96,9 +91,9 @@
         <button
           type="submit"
           class="w-full btn-primary flex items-center justify-center"
-          disabled={$auth.loading}
+          disabled={loading}
         >
-          {#if $auth.loading}
+          {#if loading}
             <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
