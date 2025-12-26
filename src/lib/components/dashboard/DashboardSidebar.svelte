@@ -15,7 +15,7 @@
   } from 'lucide-svelte';
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
-  import { auth } from '$lib/stores/authStore';
+  //import { auth } from '$lib/stores/authStore';
   
   export let collapsed = false;
   export let mobileOpen = false;
@@ -31,7 +31,7 @@
   
   function handleLogout() {
     auth.logout();
-    goto('/dashboard/login');
+    goto('/login');
   }
   
   function handleNavClick() {
