@@ -1,4 +1,5 @@
 <!-- src/lib/components/dashboard/DashboardSidebar.svelte -->
+<!-- ✅ Sidebar con módulo de Marcas -->
 <script>
   import { 
     LayoutDashboard, 
@@ -10,7 +11,8 @@
     LogOut,
     Home,
     X,
-    Tag
+    Tag,
+    Award
   } from 'lucide-svelte';
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
@@ -21,16 +23,26 @@
   
   const menuItems = [
     { icon: LayoutDashboard, label: 'Resumen', href: '/dashboard' },
-    { icon: Package, label: 'Productos', href: '/dashboard/productos' },
-    { icon: Tag, label: 'Categorías', href: '/dashboard/categorias' },
-    { icon: ShoppingBag, label: 'Pedidos', href: '/dashboard/pedidos' },
-    { icon: MessageCircle, label: 'Mensajes', href: '/dashboard/mensajes' },
-    { icon: Settings, label: 'Configuración', href: '/dashboard/configuracion' }
+    { icon: Package, label: 'Productos', href: '/productos' },
+    { icon: Tag, label: 'Categorías', href: '/categorias' },
+    { icon: Award, label: 'Marcas', href: '/marcas' },
+    { icon: ShoppingBag, label: 'Pedidos', href: '/pedidos' },
+    { icon: MessageCircle, label: 'Mensajes', href: '/mensajes' },
+    { icon: Settings, label: 'Configuración', href: '/configuracion' }
   ];
   
-  function handleLogout() {
-    auth.logout();
-    goto('/dashboard/login');
+  async function handleLogout() {
+    try {
+      auth.logout();
+      await fetch('/logout', {
+        method: 'POST',
+        credentials: 'same-origin'
+      });
+      await goto('/login', { replaceState: true, invalidateAll: true });
+    } catch (error) {
+      console.error('Error en logout:', error);
+      window.location.href = '/login';
+    }
   }
   
   function handleNavClick() {
@@ -87,14 +99,14 @@
           class:justify-center={collapsed}
           title={collapsed ? item.label : ''}
         >
-          <item.icon class="w-5 h-5 flex-shrink-0" />
+          <svelte:component this={item.icon} class="w-5 h-5 flex-shrink-0" />
           {#if !collapsed}
             <span class="ml-3 font-medium">{item.label}</span>
           {/if}
           
           <!-- Tooltip para collapsed -->
           {#if collapsed}
-            <div class="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+            <div class="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
               {item.label}
             </div>
           {/if}
@@ -184,7 +196,7 @@
               class:text-white={isActive(item.href)}
               class:hover:bg-gray-800={!isActive(item.href)}
             >
-              <item.icon class="w-5 h-5" />
+              <svelte:component this={item.icon} class="w-5 h-5" />
               <span class="ml-3 font-medium">{item.label}</span>
             </a>
           {/each}

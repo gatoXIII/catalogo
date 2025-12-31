@@ -1,3 +1,4 @@
+//src/lib/stores/authStore.js
 import { writable, derived } from 'svelte/store';
 import { browser } from '$app/environment';
 

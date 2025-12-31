@@ -5,19 +5,25 @@
   import Footer from '$lib/components/ui/Footer.svelte';
   import { page } from '$app/stores';
   
-  // Recibir solo data del layout.server.js
   export let data;
-  //export let params = {};
+  
   $: configuracion = data?.configuracion;
   
-  $: isDashboard = $page.url.pathname.startsWith('/dashboard');
-  console.log(data.configuracion);
-</script> 
+  // Detectar si estamos en rutas de admin o login
+  $: isAdminRoute = $page.url.pathname.startsWith('/dashboard') || 
+                    $page.url.pathname.startsWith('/productos') ||
+                    $page.url.pathname.startsWith('/pedidos') ||
+                    $page.url.pathname.startsWith('/mensajes') ||
+                    $page.url.pathname.startsWith('/configuracion') ||
+                    $page.url.pathname.startsWith('/categorias');
+  
+  $: isLoginRoute = $page.url.pathname === '/login';
+  
+  // Si es ruta de admin o login, no mostrar header/footer público
+  $: isPublicRoute = !isAdminRoute && !isLoginRoute;
+</script>
 
-{#if isDashboard}
-  <!-- Para rutas del dashboard, usar su propio layout -->
-  <slot />
-{:else}
+{#if isPublicRoute}
   <!-- Para rutas públicas (catálogo, carrito, página principal) -->
   <div class="min-h-screen bg-gray-50 flex flex-col">
     <Header {configuracion} />
@@ -28,4 +34,7 @@
     
     <Footer {configuracion} />
   </div>
+{:else}
+  <!-- Para rutas del dashboard y login, usar su propio layout -->
+  <slot />
 {/if}
